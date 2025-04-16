@@ -12,6 +12,7 @@ services:
       - CLAUDE_API_KEY=${CLAUDE_API_KEY:-}
     volumes:
       - /dev/shm:/dev/shm
+      - ./config.yaml:/app/config.yaml
     deploy:
       resources:
         limits:
