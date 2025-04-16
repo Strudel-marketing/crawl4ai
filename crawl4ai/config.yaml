@@ -1,0 +1,4 @@
+markdown_generator:
+  enabled: true
+  filters:
+    - type: PruningContentFilter
