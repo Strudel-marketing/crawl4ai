@@ -8,7 +8,7 @@ LABEL c4ai.version=$C4AI_VER
 # Set build arguments
 ARG APP_HOME=/app
 ARG GITHUB_REPO=https://github.com/unclecode/crawl4ai.git
-ARG GITHUB_BRANCH=main
+ARG GITHUB_BRANCH=v0.6.3
 ARG USE_LOCAL=false
 
 ENV PYTHONFAULTHANDLER=1 \
@@ -120,42 +120,12 @@ else\n\
     pip install --no-cache-dir /tmp/crawl4ai\n\
 fi' > /tmp/install.sh && chmod +x /tmp/install.sh
 
-COPY . /tmp/project/
-
-# Copy supervisor config first (might need root later, but okay for now)
-COPY deploy/docker/supervisord.conf .
-
-COPY deploy/docker/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-RUN if [ "$INSTALL_TYPE" = "all" ] ; then \
-        pip install --no-cache-dir \
-            torch \
-            torchvision \
-            torchaudio \
-            scikit-learn \
-            nltk \
-            transformers \
-            tokenizers && \
-        python -m nltk.downloader punkt stopwords ; \
-    fi
-
-RUN if [ "$INSTALL_TYPE" = "all" ] ; then \
-        pip install "/tmp/project/[all]" && \
-        python -m crawl4ai.model_loader ; \
-    elif [ "$INSTALL_TYPE" = "torch" ] ; then \
-        pip install "/tmp/project/[torch]" ; \
-    elif [ "$INSTALL_TYPE" = "transformer" ] ; then \
-        pip install "/tmp/project/[transformer]" && \
-        python -m crawl4ai.model_loader ; \
-    else \
-        pip install "/tmp/project" ; \
-    fi
-
 RUN pip install --no-cache-dir --upgrade pip && \
     /tmp/install.sh && \
-    python -c "import crawl4ai; print('✅ crawl4ai is ready to rock!')" && \
-    python -c "from playwright.sync_api import sync_playwright; print('✅ Playwright is feeling dramatic!')"
+    pip install torch torchvision transformers && \
+    python -m crawl4ai.model_loader && \
+    python -m nltk.downloader punkt stopwords && \
+    python -c "import crawl4ai; print('✅ crawl4ai is ready to rock!')"
 
 RUN crawl4ai-setup
 
