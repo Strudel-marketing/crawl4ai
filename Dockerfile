@@ -1,32 +1,69 @@
 FROM python:3.12-slim-bookworm AS build
 
+# Metadata
+LABEL maintainer="unclecode"
+LABEL description="🔥 Crawl4AI ready to rock"
+
+# Build args & envs
+ARG APP_HOME=/app
 ARG GITHUB_BRANCH=v0.6.3
-ENV APP_HOME=/app
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    REDIS_HOST=localhost \
+    REDIS_PORT=6379
 
-# התקנת תלות בסיסיות
+# מערכת
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git python3-dev build-essential curl wget supervisor redis-server \
-    libglib2.0-0 libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 \
-    libcups2 libdrm2 libdbus-1-3 libxcb1 libx11-6 libxcomposite1 \
-    libxdamage1 libxext6 libxfixes3 libxrandr2 libgbm1 libpango-1.0-0 \
-    libcairo2 libasound2 libatspi2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
+    build-essential \
+    git \
+    curl \
+    wget \
+    python3-dev \
+    redis-server \
+    supervisor \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-WORKDIR $APP_HOME
+# התקנת Python libs
+RUN pip install --upgrade pip \
+ && pip install \
+    torch torchvision transformers gunicorn \
+ && pip install git+https://github.com/unclecode/crawl4ai.git@$GITHUB_BRANCH
 
-# התקנת Crawl4AI והמודולים הנדרשים
-RUN pip install --no-cache-dir --upgrade pip
-RUN pip install git+https://github.com/unclecode/crawl4ai.git@$GITHUB_BRANCH
-RUN pip install torch torchvision transformers gunicorn
-RUN python -m crawl4ai.model_loader
+# בדיקה שההתקנה עברה
+RUN python --version && pip list
+RUN python -c "import crawl4ai; print('✅ crawl4ai installed')"
+
+# טעינת המודל (עם הדפסה לשגיאות)
+RUN python -m crawl4ai.model_loader || (echo '🔥 model_loader failed' && exit 1)
+
+# הורדת NLTK
 RUN python -m nltk.downloader punkt stopwords
 
-# התקנת Playwright ודפדפן
-RUN pip install playwright && playwright install --with-deps
+# יצירת תיקייה לאפליקציה
+WORKDIR ${APP_HOME}
+COPY deploy/docker/* ${APP_HOME}/
+COPY deploy/docker/static ${APP_HOME}/static
 
-# הגדרת Supervisor
-COPY deploy/docker/supervisord.conf .
+# הרשאות משתמש
+RUN groupadd -r appuser && useradd -r -g appuser appuser \
+ && mkdir -p /home/appuser \
+ && chown -R appuser:appuser /home/appuser \
+ && chown -R appuser:appuser ${APP_HOME}
 
-EXPOSE 11235
+# Redis תיקיות
+RUN mkdir -p /var/lib/redis /var/log/redis && chown -R appuser:appuser /var/lib/redis /var/log/redis
 
+# HEALTHCHECK
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD bash -c '\
+    redis-cli ping > /dev/null && \
+    curl -f http://localhost:11235/health || exit 1'
+
+# חשיפה וניהול משתמש
+EXPOSE 6379
+USER appuser
+ENV PYTHON_ENV=production
+
+# התחלה
 CMD ["supervisord", "-c", "supervisord.conf"]
