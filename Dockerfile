@@ -9,7 +9,7 @@ LABEL c4ai.version=$C4AI_VER
 ARG APP_HOME=/app
 ARG GITHUB_REPO=https://github.com/unclecode/crawl4ai.git
 ARG GITHUB_BRANCH=main
-ARG USE_LOCAL=true
+ARG USE_LOCAL=false
 
 ENV PYTHONFAULTHANDLER=1 \
     PYTHONHASHSEED=random \
