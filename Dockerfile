@@ -121,8 +121,8 @@ else\n\
 fi' > /tmp/install.sh && chmod +x /tmp/install.sh
 
 RUN pip install --no-cache-dir --upgrade pip && \
-    git clone --depth 1 --branch v0.6.3 https://github.com/unclecode/crawl4ai.git /tmp/crawl4ai && \
-    pip install --no-cache-dir /tmp/crawl4ai[all] && \
+    /tmp/install.sh && \
+    pip install torch torchvision transformers gunicorn && \
     python -m crawl4ai.model_loader && \
     python -m nltk.downloader punkt stopwords && \
     python -c "import crawl4ai; print('✅ crawl4ai is ready to rock!')"
