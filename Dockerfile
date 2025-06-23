@@ -15,11 +15,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR $APP_HOME
 
 # התקנת Crawl4AI והמודולים הנדרשים
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install git+https://github.com/unclecode/crawl4ai.git@$GITHUB_BRANCH \
-    && pip install torch torchvision transformers gunicorn \
-    && python -m crawl4ai.model_loader \
-    && python -m nltk.downloader punkt stopwords
+RUN pip install --no-cache-dir --upgrade pip
+RUN pip install git+https://github.com/unclecode/crawl4ai.git@$GITHUB_BRANCH
+RUN pip install torch torchvision transformers gunicorn
+RUN python -m crawl4ai.model_loader
+RUN python -m nltk.downloader punkt stopwords
 
 # התקנת Playwright ודפדפן
 RUN pip install playwright && playwright install --with-deps
