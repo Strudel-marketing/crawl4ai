@@ -123,6 +123,8 @@ fi' > /tmp/install.sh && chmod +x /tmp/install.sh
 RUN pip install --no-cache-dir --upgrade pip && \
     /tmp/install.sh && \
     pip install torch torchvision transformers && \
+    pip install gunicorn && \
+    which gunicorn && gunicorn --version && \
     python -m crawl4ai.model_loader && \
     python -m nltk.downloader punkt stopwords && \
     python -c "import crawl4ai; print('✅ crawl4ai is ready to rock!')"
