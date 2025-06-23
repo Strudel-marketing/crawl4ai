@@ -169,5 +169,7 @@ USER appuser
 # Set environment variables to ptoduction
 ENV PYTHON_ENV=production 
 
+RUN pip install gunicorn
+
 # Start the application using supervisord
 CMD ["supervisord", "-c", "supervisord.conf"]
