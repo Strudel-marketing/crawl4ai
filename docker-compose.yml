@@ -46,17 +46,13 @@ services:
 
     labels:
       traefik.enable: "true"
-
-      traefik.http.routers.crawl4ai.rule: Host("crawl4ai.strudel.marketing")
-      traefik.http.routers.crawl4ai.entrypoints: https
+      traefik.http.routers.crawl4ai.rule: "Host(`crawl4ai.strudel.marketing`)"
+      traefik.http.routers.crawl4ai.entrypoints: "https"
       traefik.http.routers.crawl4ai.tls: "true"
-      traefik.http.routers.crawl4ai.tls.certresolver: letsencrypt
-      traefik.http.routers.crawl4ai.middlewares: gzip
-      
+      traefik.http.routers.crawl4ai.tls.certresolver: "letsencrypt"
+      traefik.http.routers.crawl4ai.middlewares: "gzip"
       traefik.http.services.crawl4ai.loadbalancer.server.port: "11235"
-      
       traefik.http.middlewares.gzip.compress: "true"
-
 
 networks:
   default:
