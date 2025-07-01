@@ -1,11 +1,10 @@
 version: '3.8'
 
-# Shared configuration for all environments
 x-base-config: &base-config
   ports:
-    - "11235:11235"  # Gunicorn port (אם אתה לא צריך גישה חיצונית, אפשר להסיר)
+    - "11235:11235"
   env_file:
-    - .llm.env       # API keys (create from .llm.env.example)
+    - .llm.env
   environment:
     - OPENAI_API_KEY=${OPENAI_API_KEY:-}
     - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
@@ -15,7 +14,7 @@ x-base-config: &base-config
     - MISTRAL_API_KEY=${MISTRAL_API_KEY:-}
     - GEMINI_API_TOKEN=${GEMINI_API_TOKEN:-}
   volumes:
-    - /dev/shm:/dev/shm  # Chromium performance
+    - /dev/shm:/dev/shm
   deploy:
     resources:
       limits:
@@ -34,23 +33,21 @@ x-base-config: &base-config
 services:
   crawl4ai:
     image: ${IMAGE:-unclecode/crawl4ai:${TAG:-latest}}
-
     build:
       context: .
       dockerfile: Dockerfile
       args:
         INSTALL_TYPE: ${INSTALL_TYPE:-default}
         ENABLE_GPU: ${ENABLE_GPU:-false}
-
     <<: *base-config
 
     labels:
       traefik.enable: "true"
-      traefik.http.routers.crawl4ai.rule: "Host(`crawl4ai.strudel.marketing`)"
-      traefik.http.routers.crawl4ai.entrypoints: "https"
+      traefik.http.routers.crawl4ai.rule: Host("crawl4ai.strudel.marketing")
+      traefik.http.routers.crawl4ai.entrypoints: https
       traefik.http.routers.crawl4ai.tls: "true"
-      traefik.http.routers.crawl4ai.tls.certresolver: "letsencrypt"
-      traefik.http.routers.crawl4ai.middlewares: "gzip"
+      traefik.http.routers.crawl4ai.tls.certresolver: letsencrypt
+      traefik.http.routers.crawl4ai.middlewares: gzip
       traefik.http.services.crawl4ai.loadbalancer.server.port: "11235"
       traefik.http.middlewares.gzip.compress: "true"
 
