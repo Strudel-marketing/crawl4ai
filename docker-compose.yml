@@ -37,7 +37,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        INSTALL_TYPE: full
+        INSTALL_TYPE: all
         ENABLE_GPU: false
     <<: *base-config
     labels:
