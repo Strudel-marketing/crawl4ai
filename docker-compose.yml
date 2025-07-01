@@ -37,8 +37,8 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        INSTALL_TYPE: ${INSTALL_TYPE:-default}
-        ENABLE_GPU: ${ENABLE_GPU:-false}
+        INSTALL_TYPE: full
+        ENABLE_GPU: false
     <<: *base-config
     labels:
       traefik.enable: "true"
